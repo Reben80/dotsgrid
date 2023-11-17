@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Dots Game</title>
+    <style>
+        /* Style for the body to center the content */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color:  #ffe0e0;
+        }
+
+        /* Style for the game controls */
+        #game-controls {
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        #game-controls label,
+        #game-controls select,
+        #game-controls button {
+            margin: 0 10px;
+            font-size: 16px;
+        }
+
+        /* Style for the game container */
+        #game-container {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px; /* Rounded outer corners for the game container */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+        /* Style for the game title */
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        /* Style for the grid */
+        #grid-container {
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .row {
+            display: flex;
+        }
+
+        .cell {
+            width: 70px;
+            height: 70px;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Style for the dots */
+        .dot {
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            border-radius: 50%;
+        }
+
+        .player1 {
+            background-color: rgb(0, 162, 255);
+        }
+
+        .player2 {
+            background-color:  rgb(0, 162, 255);
+        }
+
+        /* Style for the turn indicator and reset button */
+        #turn {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        #resetButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        /* ... your existing CSS styles ... */
+
+/* Improved cell style */
+.cell {
+    width: 70px;
+    height: 70px;
+    border: 2px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Added transition for smooth hover effect */
+}
+
+/* New hover effect for cells */
+.cell:hover {
+    background-color: #ffccf9; /* Change background color on hover */
+}
+/* .cell {
+    width: 70px;
+    height: 70px;
+    border: 3px solid #333; /* Slightly thicker solid line */
+    /* For a dashed line, use: border: 2px dashed #333; */
+    /* For a dotted line, use: border: 2px dotted #333; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 5px; /* Rounded corners */
+} */
+
+/* ... rest of your existing CSS styles ... */
+
+</style>
+</head>
+<body>
+    <a id="twitter-handle" href="https://twitter.com/rebin3" target="_blank">@rebin3</a>
+    <div id="game-container">
+        <h1> Dots Game</h1>
+        <div id="grid-container"></div>
+        <p>Try to put as many dots on the board as possible, and then try to guess the rule of the game!</p>
+    </div>
+
+    <div id="game-controls">
+        <label for="boardSize">Select Board Size:</label>
+        <select id="boardSize">
+            <option value="2">2x2</option>
+            <option value="3">3x3</option>
+            <option value="4">4x4</option>
+            <option value="5">5x5</option>
+            <option value="6">6x6</option>
+            <!-- <option value="7">7x7</option>
+            <option value="8">8x8</option> -->
+        </select>
+        <button id="resetButton">Reset Game</button>
+    </div>
+</body>
+
+</html>
+
+    <script>
+        const gridContainer = document.getElementById('grid-container');
+        const turnElement = document.getElementById('turn');
+        const resetButton = document.getElementById('resetButton');
+        const boardSizeSelect = document.getElementById('boardSize');
+        let n = parseInt(boardSizeSelect.value); // Initialize board size
+        let m = n; // Make it a square grid
+        let currentPlayer, moves, grid;
+
+        // Function to update the grid based on selected size
+        function updateGridSize() {
+            n = parseInt(boardSizeSelect.value);
+            m = n;
+            generateGrid();
+            initializeGame();
+        }
+
+        boardSizeSelect.addEventListener('change', updateGridSize);
+
+        // Function to generate the grid based on the selected size
+        function generateGrid() {
+            gridContainer.innerHTML = '';
+
+            for (let i = 0; i < n; i++) {
+                const rowElement = document.createElement('div');
+                rowElement.className = 'row';
+                for (let j = 0; j < m; j++) {
+                    const cellElement = document.createElement('div');
+                    cellElement.className = 'cell';
+                    cellElement.id = `cell-${i}-${j}`;
+                    cellElement.addEventListener('click', () => {
+                        updateGrid(i, j);
+                    });
+                    rowElement.appendChild(cellElement);
+                }
+                gridContainer.appendChild(rowElement);
+            }
+        }
+
+        // Initialize the game
+        function initializeGame() {
+            currentPlayer = 1;
+            moves = 0;
+            grid = [];
+            for (let i = 0; i < n; i++) {
+                const row = [];
+                for (let j = 0; j < m; j++) {
+                    row.push(null);
+                }
+                grid.push(row);
+            }
+            // turnElement.textContent = `Player ${currentPlayer}'s Turn`;
+        }
+
+        // Initialize the grid and game
+        generateGrid();
+        initializeGame();
+
+        // Function to update the grid
+        function updateGrid(row, col) {
+            if (grid[row][col] === null) {
+                if (isRowEmpty(row) && isColumnEmpty(col)) {
+                    grid[row][col] = currentPlayer;
+
+                    const dotElement = document.createElement('div');
+                    dotElement.className = `dot player${currentPlayer}`;
+                    document.getElementById(`cell-${row}-${col}`).appendChild(dotElement);
+
+                    moves++;
+
+                    if (isWinner(row, col)) {
+                        declareWinner(currentPlayer);
+                    } else if (moves === n * m) {
+                        declareDraw();
+                    } else {
+                        currentPlayer = 3 - currentPlayer;
+                        turnElement.textContent = `Player ${currentPlayer}'s Turn`;
+                    }
+                }
+            }
+        }
+
+        // Function to declare the winner
+        function declareWinner(player) {
+            alert(`Player ${player} is the winner!`);
+            resetGame();
+        }
+
+        // Function to declare a draw
+        function declareDraw() {
+            alert("It's a draw!");
+            resetGame();
+        }
+
+        // Function to check if a row is empty
+        function isRowEmpty(row) {
+            for (let j = 0; j < m; j++) {
+                if (grid[row][j] !== null) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Function to check if a column is empty
+        function isColumnEmpty(col) {
+            for (let i = 0; i < n; i++) {
+                if (grid[i][col] !== null) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Function to check if the current move results in a win
+        function isWinner(row, col) {
+            return checkRow(row) || checkColumn(col) || checkDiagonals(row, col);
+        }
+
+        // Function to check if the current move results in a win in the row
+        function checkRow(row) {
+            const player = grid[row][0];
+            for (let j = 1; j < m; j++) {
+                if (grid[row][j] !== player) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Function to check if the current move results in a win in the column
+        function checkColumn(col) {
+            const player = grid[0][col];
+            for (let i = 1; i < n; i++) {
+                if (grid[i][col] !== player) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Function to check if the current move results in a win in the diagonals
+        function checkDiagonals(row, col) {
+            if (row === col) {
+                // Check main diagonal
+                const player = grid[0][0];
+                for (let i = 1; i < Math.min(n, m); i++) {
+                    if (grid[i][i] !== player) {
+                        return false;
+                    }
+                }
+                return true;
+            } else if (row + col === n - 1) {
+                // Check anti-diagonal
+                const player = grid[0][n - 1];
+                for (let i = 1; i < n; i++) {
+                    if (grid[i][n - 1 - i] !== player) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        // Function to reset the game
+        function resetGame() {
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < m; j++) {
+                    const cell = document.getElementById(`cell-${i}-${j}`);
+                    cell.innerHTML = '';
+                    grid[i][j] = null;
+                }
+            }
+            moves = 0;
+            currentPlayer = 1;
+            turnElement.textContent = `Player ${currentPlayer}'s Turn`;
+        }
+
+        resetButton.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
